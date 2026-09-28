@@ -1,0 +1,31 @@
+schemaVersion: 1
+modules:
+  - moduleId: zalava-module-tasks
+    version: 0.1.0-alpha.1
+    displayName: Tasks
+    description: Host-owned task operations through SEA.
+    supportUrl: https://github.com/Zalava/zalava-module-tasks
+    artifact:
+      groupId: org.zalava.modules
+      artifactId: zalava-module-tasks
+      version: 0.1.0-alpha.1
+    source:
+      repository: https://github.com/Zalava/zalava-module-tasks.git
+      license: Apache-2.0
+    build:
+      command: ["./gradlew", "build"]
+      verificationCommand: ["./gradlew", "test"]
+    compatibility:
+      seaRuntime: ">=1.0.0 <2.0.0"
+    configurationSchema:
+      type: object
+      properties: {}
+    factories:
+      - factoryId: tasks
+        providerType: tasks
+    services:
+      provided: []
+      required: []
+    operations: []
+    security:
+      permissions: [tasks-read, tasks-write]
