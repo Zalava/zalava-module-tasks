@@ -7,9 +7,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import org.zalava.InvocationContext;
-import org.zalava.SeaOperationResult;
-import org.zalava.SeaProvider;
-import org.zalava.SeaToolDescriptor;
+import org.zalava.ZalavaOperationResult;
+import org.zalava.ZalavaProvider;
+import org.zalava.ZalavaToolDescriptor;
 import org.zalava.testing.ConfigFixture;
 import org.zalava.testing.ModuleContractKit;
 import org.zalava.testing.ProviderFixture;
@@ -78,14 +78,14 @@ class TasksSeaModuleTest {
     @Test
     void createsTheConfiguredProviderAndDeclaresItsTools() {
         try (ProviderFixture providers = kit.providers(hostService(new CapturingTasks()))) {
-            SeaProvider provider = providers.requireProvider(PROVIDER_ID);
+            ZalavaProvider provider = providers.requireProvider(PROVIDER_ID);
 
             assertThat(provider.descriptor().moduleId()).isEqualTo(MODULE_ID);
             assertThat(provider.descriptor().providerType()).isEqualTo("tasks");
-            assertThat(provider.listTools().stream().map(SeaToolDescriptor::name))
+            assertThat(provider.listTools().stream().map(ZalavaToolDescriptor::name))
                     .containsExactly("createTask", "scheduleTask", "scheduleRecurringTask",
                             "deleteRecurringTask", "listRecurringTasks");
-            assertThat(provider.listTools().stream().map(SeaToolDescriptor::sideEffecting))
+            assertThat(provider.listTools().stream().map(ZalavaToolDescriptor::sideEffecting))
                     .containsExactly(true, true, true, true, false);
         }
     }
@@ -93,7 +93,7 @@ class TasksSeaModuleTest {
     @Test
     void declaresTheModuleOwnedToolInputSchemas() {
         try (ProviderFixture providers = kit.providers(hostService(new CapturingTasks()))) {
-            SeaToolDescriptor create = providers.requireTool(PROVIDER_ID, "createTask");
+            ZalavaToolDescriptor create = providers.requireTool(PROVIDER_ID, "createTask");
             assertThat(create.inputSchema()).containsEntry("type", "object")
                     .containsEntry("additionalProperties", false);
             assertThat(create.inputSchema().get("required")).isEqualTo(List.of("name", "description"));
@@ -106,7 +106,7 @@ class TasksSeaModuleTest {
     void delegatesScopedTaskOperationsToTheHostService() {
         CapturingTasks tasks = new CapturingTasks();
         try (ProviderFixture providers = kit.providers(hostService(tasks))) {
-            SeaOperationResult created = providers.invoke(PROVIDER_ID, "createTask",
+            ZalavaOperationResult created = providers.invoke(PROVIDER_ID, "createTask",
                     arguments().put("name", "report").put("description", "Write report"),
                     new InvocationContext("alice", false, Map.of()));
             assertThat(created.success()).isTrue();
@@ -133,7 +133,7 @@ class TasksSeaModuleTest {
     @Test
     void returnsTheHostOwnedRecurringProjection() {
         try (ProviderFixture providers = kit.providers(hostService(new CapturingTasks()))) {
-            SeaOperationResult result = providers.invoke(PROVIDER_ID, "listRecurringTasks", arguments());
+            ZalavaOperationResult result = providers.invoke(PROVIDER_ID, "listRecurringTasks", arguments());
             assertThat(result.content())
                     .isEqualTo(List.of(new RecurringTaskSummary("daily", "daily", "Daily report")));
         }
