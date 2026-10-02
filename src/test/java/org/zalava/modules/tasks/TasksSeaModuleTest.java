@@ -1,4 +1,4 @@
-package org.zalava.tasks;
+package org.zalava.modules.tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -9,13 +9,14 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zalava.InvocationContext;
-import org.zalava.ZalavaOperationResult;
-import org.zalava.ZalavaProvider;
-import org.zalava.ZalavaToolDescriptor;
-import org.zalava.testing.ConfigFixture;
-import org.zalava.testing.ModuleContractKit;
-import org.zalava.testing.ProviderFixture;
+import org.zalava.api.InvocationContext;
+import org.zalava.api.ZalavaOperationResult;
+import org.zalava.api.ZalavaProvider;
+import org.zalava.api.ZalavaToolDescriptor;
+import org.zalava.api.extensions.tasks.*;
+import org.zalava.api.testing.ConfigFixture;
+import org.zalava.api.testing.ModuleContractKit;
+import org.zalava.api.testing.ProviderFixture;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
@@ -116,7 +117,11 @@ class TasksSeaModuleTest {
           providers.invoke(
               PROVIDER_ID,
               "createTask",
-              arguments().put("name", "report").put("description", "Write report"),
+              new tools.jackson.databind.json.JsonMapper()
+                  .convertValue(
+                      arguments().put("name", "report").put("description", "Write report"),
+                      new tools.jackson.core.type.TypeReference<
+                          java.util.Map<String, Object>>() {}),
               new InvocationContext("alice", false, Map.of()));
       assertThat(created.success()).isTrue();
       assertThat(tasks.createdActorId).isEqualTo("alice");
@@ -126,23 +131,35 @@ class TasksSeaModuleTest {
       providers.invoke(
           PROVIDER_ID,
           "scheduleTask",
-          arguments()
-              .put("executionTime", "2026-08-20T09:00:00")
-              .put("name", "report")
-              .put("description", "Write report"));
+          new tools.jackson.databind.json.JsonMapper()
+              .convertValue(
+                  arguments()
+                      .put("executionTime", "2026-08-20T09:00:00")
+                      .put("name", "report")
+                      .put("description", "Write report"),
+                  new tools.jackson.core.type.TypeReference<java.util.Map<String, Object>>() {}));
       assertThat(tasks.scheduledTime).isEqualTo("2026-08-20T09:00:00");
       assertThat(tasks.scheduledName).isEqualTo("report");
 
       providers.invoke(
           PROVIDER_ID,
           "scheduleRecurringTask",
-          arguments()
-              .put("cronExpression", "0 9 * * *")
-              .put("name", "daily")
-              .put("description", "Daily report"));
+          new tools.jackson.databind.json.JsonMapper()
+              .convertValue(
+                  arguments()
+                      .put("cronExpression", "0 9 * * *")
+                      .put("name", "daily")
+                      .put("description", "Daily report"),
+                  new tools.jackson.core.type.TypeReference<java.util.Map<String, Object>>() {}));
       assertThat(tasks.recurringCron).isEqualTo("0 9 * * *");
 
-      providers.invoke(PROVIDER_ID, "deleteRecurringTask", arguments().put("name", "daily"));
+      providers.invoke(
+          PROVIDER_ID,
+          "deleteRecurringTask",
+          new tools.jackson.databind.json.JsonMapper()
+              .convertValue(
+                  arguments().put("name", "daily"),
+                  new tools.jackson.core.type.TypeReference<java.util.Map<String, Object>>() {}));
       assertThat(tasks.deletedName).isEqualTo("daily");
     }
   }
@@ -151,19 +168,35 @@ class TasksSeaModuleTest {
   void returnsTheHostOwnedRecurringProjection() {
     try (ProviderFixture providers = kit.providers(hostService(new CapturingTasks()))) {
       ZalavaOperationResult result =
-          providers.invoke(PROVIDER_ID, "listRecurringTasks", arguments());
+          providers.invoke(
+              PROVIDER_ID,
+              "listRecurringTasks",
+              new tools.jackson.databind.json.JsonMapper()
+                  .convertValue(
+                      arguments(),
+                      new tools.jackson.core.type.TypeReference<
+                          java.util.Map<String, Object>>() {}));
       assertThat(result.content())
           .isEqualTo(List.of(new RecurringTaskSummary("daily", "daily", "Daily report")));
     }
   }
 
   @Test
-  void validatesObjectAndRequiredArguments() {
+  void validatesJsonValuesAndRequiredArguments() {
     try (ProviderFixture providers = kit.providers(hostService(new CapturingTasks()))) {
-      assertThatThrownBy(() -> providers.invoke(PROVIDER_ID, "createTask", array()))
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessage("arguments must be an object");
-      assertThatThrownBy(() -> providers.invoke(PROVIDER_ID, "deleteRecurringTask", arguments()))
+      assertThatThrownBy(
+              () -> providers.invoke(PROVIDER_ID, "createTask", Map.of("name", new Object())))
+          .isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(
+              () ->
+                  providers.invoke(
+                      PROVIDER_ID,
+                      "deleteRecurringTask",
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments(),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {})))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage("name is required");
     }
@@ -179,22 +212,52 @@ class TasksSeaModuleTest {
     try (ProviderFixture providers = kit.providers(hostService(tasks))) {
       ZalavaProvider provider = providers.requireProvider(PROVIDER_ID);
       assertThat(provider.capabilities().supportsTools()).isTrue();
-      assertThatThrownBy(() -> provider.callTool("createTask", null, InvocationContext.system()))
+      assertThatThrownBy(
+              () ->
+                  provider.callTool(
+                      "createTask",
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              null,
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}),
+                      InvocationContext.system()))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage("arguments must be an object");
       assertThatThrownBy(
               () ->
-                  providers.invoke(PROVIDER_ID, "deleteRecurringTask", arguments().putNull("name")))
+                  providers.invoke(
+                      PROVIDER_ID,
+                      "deleteRecurringTask",
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments().putNull("name"),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {})))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage("name is required");
       assertThatThrownBy(
               () ->
                   providers.invoke(
-                      PROVIDER_ID, "deleteRecurringTask", arguments().put("name", " ")))
+                      PROVIDER_ID,
+                      "deleteRecurringTask",
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments().put("name", " "),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {})))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage("name is required");
       assertThatThrownBy(
-              () -> provider.callTool("unknown", arguments(), InvocationContext.system()))
+              () ->
+                  provider.callTool(
+                      "unknown",
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments(),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}),
+                      InvocationContext.system()))
           .isInstanceOf(UnsupportedOperationException.class)
           .hasMessageContaining("Unknown task tool");
       assertThat(tasks.deletedName).isNull();

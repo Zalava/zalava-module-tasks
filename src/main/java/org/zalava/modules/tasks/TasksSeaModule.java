@@ -1,21 +1,22 @@
-package org.zalava.tasks;
+package org.zalava.modules.tasks;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.zalava.InvocationContext;
-import org.zalava.ModuleDescriptor;
-import org.zalava.ProviderCapabilities;
-import org.zalava.ProviderDescriptor;
-import org.zalava.ProviderFactory;
-import org.zalava.ProviderFactoryContext;
-import org.zalava.ProviderFactoryDescriptor;
-import org.zalava.ZalavaModule;
-import org.zalava.ZalavaOperationResult;
-import org.zalava.ZalavaProvider;
-import org.zalava.ZalavaToolDescriptor;
-import org.zalava.ZalavaToolInputSchemas;
+import org.zalava.api.InvocationContext;
+import org.zalava.api.ModuleDescriptor;
+import org.zalava.api.ProviderCapabilities;
+import org.zalava.api.ProviderDescriptor;
+import org.zalava.api.ProviderFactory;
+import org.zalava.api.ProviderFactoryContext;
+import org.zalava.api.ProviderFactoryDescriptor;
+import org.zalava.api.ZalavaModule;
+import org.zalava.api.ZalavaOperationResult;
+import org.zalava.api.ZalavaProvider;
+import org.zalava.api.ZalavaToolDescriptor;
+import org.zalava.api.ZalavaToolInputSchemas;
+import org.zalava.api.extensions.tasks.*;
 import tools.jackson.databind.JsonNode;
 
 public final class TasksSeaModule implements ZalavaModule {
@@ -88,7 +89,9 @@ public final class TasksSeaModule implements ZalavaModule {
 
     @Override
     public ZalavaOperationResult callTool(
-        String name, JsonNode arguments, InvocationContext context) {
+        String name, java.util.Map<String, Object> argumentValues, InvocationContext context) {
+      tools.jackson.databind.JsonNode arguments =
+          new tools.jackson.databind.json.JsonMapper().valueToTree(argumentValues);
       requireObject(arguments);
       return switch (name) {
         case "createTask" ->
