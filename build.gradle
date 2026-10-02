@@ -8,6 +8,8 @@ buildscript {
 }
 
 plugins {
+    id 'jacoco'
+    id 'com.diffplug.spotless' version '7.2.1'
     id 'java-library'
     id 'maven-publish'
 }
@@ -181,4 +183,53 @@ tasks.withType(PublishToMavenRepository).configureEach {
             throw new GradleException('GitHub Packages publication requires GITHUB_ACTOR and ZALAVA_PUBLISH_TOKEN')
         }
     }
+}
+
+
+// Keep module quality gates aligned with the Zalava host.
+spotless {
+    java {
+        target 'src/**/*.java'
+        googleJavaFormat('1.36.1')
+    }
+}
+
+jacoco {
+    toolVersion = '0.8.14'
+}
+
+tasks.named('test') {
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = true
+    }
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('test')
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.90
+            }
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.74
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('spotlessCheck')
+    dependsOn tasks.named('jacocoTestCoverageVerification')
 }
