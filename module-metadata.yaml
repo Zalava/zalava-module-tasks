@@ -3,7 +3,7 @@ modules:
   - moduleId: zalava-module-tasks
     version: 0.1.0-alpha.3
     displayName: Tasks
-    description: Host-owned task operations through SEA.
+    description: Host-owned task operations through Zalava.
     supportUrl: https://github.com/Zalava/zalava-module-tasks
     artifact:
       groupId: org.zalava.modules
@@ -16,7 +16,7 @@ modules:
       command: ["./gradlew", "build"]
       verificationCommand: ["./gradlew", "test"]
     compatibility:
-      seaRuntime: ">=1.0.0 <2.0.0"
+      zalavaRuntime: ">=1.0.0 <2.0.0"
     configurationSchema:
       type: object
       properties: {}
