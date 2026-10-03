@@ -19,13 +19,13 @@ import org.zalava.api.ZalavaToolInputSchemas;
 import org.zalava.api.extensions.tasks.*;
 import tools.jackson.databind.JsonNode;
 
-public final class TasksSeaModule implements ZalavaModule {
+public final class TasksZalavaModule implements ZalavaModule {
   static final String ID = "zalava-module-tasks";
   static final String VERSION = moduleVersion();
 
   @Override
   public ModuleDescriptor descriptor() {
-    return new ModuleDescriptor(ID, VERSION, "Tasks", "Host-owned task operations through SEA.");
+    return new ModuleDescriptor(ID, VERSION, "Tasks", "Host-owned task operations through Zalava.");
   }
 
   @Override
@@ -179,7 +179,7 @@ public final class TasksSeaModule implements ZalavaModule {
   }
 
   private static String moduleVersion() {
-    try (var stream = TasksSeaModule.class.getResourceAsStream("/module.properties")) {
+    try (var stream = TasksZalavaModule.class.getResourceAsStream("/module.properties")) {
       if (stream == null) throw new IllegalStateException("Missing module.properties");
       Properties properties = new Properties();
       properties.load(stream);

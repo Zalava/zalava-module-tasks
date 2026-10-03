@@ -23,9 +23,9 @@ import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Exercises the real built module JAR at the stable {@code module-api} boundary through the
- * released contract kit. Host-owned task persistence, scheduling and policy stay covered by SEA.
+ * released contract kit. Host-owned task persistence, scheduling and policy stay covered by Zalava.
  */
-class TasksSeaModuleTest {
+class TasksZalavaModuleTest {
 
   private static final String MODULE_ID = "zalava-module-tasks";
   private static final String PROVIDER_ID = "tasks";
