@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "moduleId": "zalava-module-tasks",
+  "releases": [
+    {
+      "version": "0.1.0-alpha.4",
+      "releaseTag": "v0.1.0-alpha.4",
+      "artifact": {
+        "groupId": "org.zalava.modules",
+        "artifactId": "zalava-module-tasks",
+        "version": "0.1.0-alpha.4",
+        "sha256": "b8aff771deea1cb3bc04f63e7132b94c707bdd258fae07ceb2b1c8aa03db4f6e",
+        "type": "github-release-assets",
+        "repositoryUri": "https://github.com/Zalava/zalava-module-tasks",
+        "releaseTag": "v0.1.0-alpha.4",
+        "assetName": "zalava-module-tasks-0.1.0-alpha.4.jar"
+      },
+      "artifactBundle": false,
+      "source": {
+        "repository": "https://github.com/Zalava/zalava-module-tasks.git",
+        "revision": "f13931ebf96ccbbe021865f58ac037b922911ea6",
+        "license": "Apache-2.0"
+      },
+      "compatibility": {
+        "zalavaRuntime": ">=1.0.0 <2.0.0"
+      },
+      "security": {
+        "permissions": [
+          "tasks-read",
+          "tasks-write"
+        ]
+      }
+    }
+  ]
+}
